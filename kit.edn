@@ -1,0 +1,8 @@
+{:full-name "surprisebuild/surprisebuildweb2"
+ :ns-name   "surprisebuild.surprisebuildweb2"
+ :sanitized "surprisebuild/surprisebuildweb2"
+ :name      "surprisebuildweb2"
+ :modules   {:root         "modules"
+             :repositories [{:url  "https://github.com/kit-clj/modules.git"
+                             :tag  "master"
+                             :name "kit-modules"}]}}
