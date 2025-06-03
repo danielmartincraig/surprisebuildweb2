@@ -19,14 +19,84 @@
    [react-oidc-context :as oidc :refer [AuthProvider useAuth]]
    [react :refer [StrictMode]]))
 
+(defn on-sign-in-callback []
+  (set! (.. js/window -location -href) "/"))
+
+(def client-id "1f7ud36u0tud5lt9pf7mb6cmoq")
+(def redirect_uri (if config/debug? "http://localhost:8080/" "https://www.surprisebuild.com/"))
+(def cdn-domain-name "https://d32bykpr179a34.cloudfront.net")
+
+(def cognito-auth-config
+  #js {"authority" "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_R56ssR1OX"
+       "client_id" client-id
+       "redirect_uri" redirect_uri
+       "response_type" "code"
+       "scope" "openid email"
+       "onSigninCallback" on-sign-in-callback});
+
 ;; -------------------------
 ;; Views
 
-(defn home-page []
-  [:div [:h2 "Welcome to Reagent!"]])
+(defn comparison-form []
+  (let [[partA partB] (urf/use-subscribe [:app/comparison-parts])]
+    ($ :div
+       ($ :table
+          ($ :tbody
+             ($ :tr
+                ($ :td ($ :img {:src (str cdn-domain-name "/" partA ".png")}))
+                ($ :td ($ :img {:src (str cdn-domain-name "/" partB ".png")})))))
+       ($ :p "Do these two parts connect?")
+       ($ :button {:on-click #(rf/dispatch [:app/shuffle-comparison-parts])} "yes")
+       ($ :button {:on-click #(rf/dispatch [:app/shuffle-comparison-parts])} "no"))))
+
+(defui sign-in-form [{:keys [auth]}]
+  ($ :div
+     ($ :h2 "Login")
+     ($ :button {:on-click (fn [] (.signinRedirect ^js auth))} "Log in")))
+
+(defui sign-out-form [{:keys [auth]}]
+  ($ :div
+     ($ :button {:on-click (fn [] (.removeUser ^js auth))} "Logout")))
+
+(defui profile-view [{:keys [auth]}]
+  (let [user (.-user auth)
+        profile (.-profile user)]
+    ($ :div
+       ($ :p (str "Logged in as: " (.-email profile)))
+       ($ sign-out-form {:auth auth}))))
+
+(defui body []
+  ($ :div
+     ($ comparison-form)
+     ($ profile-view {:auth (useAuth)})))
+
+(defui header []
+  ($ :header.app-header
+     ($ :div {:width 32}
+        ($ :p {:style {:font-family "Montserrat" :font-size 48}} "surprisebuild"))))
+
+(defui footer []
+  ($ :footer.app-footer
+     ($ :small "made by Daniel Craig")))
+
+(defui authenticated-app []
+  (let [auth (useAuth)]
+    ($ :div
+       (cond
+         (.-isAuthenticated auth) ($ body)
+         (.-isLoading auth) "Loading..."
+         (.-error auth) (str "Error: " (gobj/get auth "error"))
+         :else ($ sign-in-form {:auth auth})))))
 
 (defui app []
-  ($ :h1 "hi"))
+  (let [todos (hooks/use-subscribe [:app/todos])]
+    ($ StrictMode
+       ($ AuthProvider
+          cognito-auth-config
+          ($ :.app
+             ($ header)
+             ($ authenticated-app)
+             ($ footer))))))
 
 ;; -------------------------
 ;; Initialize app
