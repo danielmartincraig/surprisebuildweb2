@@ -13,6 +13,8 @@ ENV NVM_DIR=/root/.nvm
 
 RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION"
 
+RUN bash -c "npm install --force"
+
 RUN bash -c "source $NVM_DIR/nvm.sh && clj -Sforce -T:build all"
 
 FROM azul/zulu-openjdk-alpine:21
