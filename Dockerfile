@@ -2,8 +2,8 @@
 FROM clojure:temurin-21-bookworm AS build
 ARG NODE_VERSION=20
 
-WORKDIR /
-COPY . /
+WORKDIR /usr/app
+COPY ./ /usr/app
 
 RUN apt update && apt install curl -y
 
