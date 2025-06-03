@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.2
-FROM clojure:openjdk-21 AS build
+FROM clojure:temurin-21-bookworm AS build
 ARG NODE_VERSION=20
 
 RUN apt update && apt install curl -y
