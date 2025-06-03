@@ -13,7 +13,7 @@ RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION"
 WORKDIR /
 COPY . /
 
-RUN bash -c "source $NVM_DIR/nvm.sh && clj -Sforce -T:build all"
+RUN bash -c "source $NVM_DIR/nvm.sh && npm install && clj -Sforce -T:build all"
 
 FROM azul/zulu-openjdk-alpine:21
 
