@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   # Single deploy job since we're just deploying
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
     environment: dev
     steps: 
