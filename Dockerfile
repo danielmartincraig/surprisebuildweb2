@@ -11,11 +11,9 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | b
 
 ENV NVM_DIR=/root/.nvm
 
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION"
+RUN bash -c "source $NVM_DIR/nvm.sh && npm i -g npm && nvm install $NODE_VERSION"
 
-USER node
-
-RUN bash -c "source $NVM_DIR/nvm.sh && npm install --force"
+RUN bash -c "source $NVM_DIR/nvm.sh && npm install"
 
 RUN bash -c "source $NVM_DIR/nvm.sh && clj -Sforce -T:build all"
 
