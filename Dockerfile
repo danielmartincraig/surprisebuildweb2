@@ -19,7 +19,7 @@ RUN bash -c "source $NVM_DIR/nvm.sh && clj -Sforce -T:build all"
 
 FROM azul/zulu-openjdk-alpine:21
 
-COPY --from=build /target/surprisebuildweb2-standalone.jar /surprisebuildweb2/surprisebuildweb2-standalone.jar
+COPY --from=build /usr/app/target/surprisebuildweb2-standalone.jar /surprisebuildweb2/surprisebuildweb2-standalone.jar
 
 EXPOSE $PORT
 
