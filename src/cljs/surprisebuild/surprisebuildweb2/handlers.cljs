@@ -1,7 +1,7 @@
 (ns surprisebuild.surprisebuildweb2.handlers
     (:require [re-frame.core :as rf]
-            [app.db :as db]
-            [app.fx :as fx]))
+            [surprisebuild.surprisebuildweb2.db :as db]
+            [surprisebuild.surprisebuildweb2.fx :as fx]))
 
 (def load-app-state (rf/inject-cofx :store/app-state "surprisebuildweb/app-state"))
 (def store-app-state (fx/store-app-state "surprisebuildweb/app-state"))
