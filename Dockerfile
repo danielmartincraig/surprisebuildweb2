@@ -4,7 +4,6 @@ ARG NODE_VERSION=20
 
 WORKDIR /usr/app
 COPY ./ /usr/app
-USER node
 
 RUN apt update && apt install curl -y
 
@@ -13,6 +12,8 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | b
 ENV NVM_DIR=/root/.nvm
 
 RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION"
+
+USER node
 
 RUN bash -c "source $NVM_DIR/nvm.sh && npm install --force"
 
