@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.2
-FROM clojure:openjdk-17 AS build
+FROM clojure:openjdk-21 AS build
 ARG NODE_VERSION=20
 
 RUN apt update && apt install curl -y
@@ -15,7 +15,7 @@ COPY . /
 
 RUN bash -c "source $NVM_DIR/nvm.sh && clj -Sforce -T:build all"
 
-FROM azul/zulu-openjdk-alpine:17
+FROM azul/zulu-openjdk-alpine:21
 
 COPY --from=build /target/surprisebuildweb2-standalone.jar /surprisebuildweb2/surprisebuildweb2-standalone.jar
 
