@@ -2,7 +2,7 @@
   "devDependencies": {
     "lightningcss-cli": "^1.19.0",
     "onchange": "^7.1.0",
-    "shadow-cljs": "2.28.21",
+    "shadow-cljs": "3.1.5",
     "use-sync-external-store": "^1.2.0"
   },
   "dependencies": {
