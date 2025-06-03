@@ -16,7 +16,8 @@
 
 ### Core Technologies
 - **Language**: Clojure 1.12.0
-- **Build Tools**: tools.deps with aliases for different environments
+- **Frontend**: ClojureScript with Reagent for React-based UI components
+- **Build Tools**: tools.deps with aliases for different environments, Shadow-CLJS for ClojureScript compilation
 - **Testing**: Cognitect test-runner with Peridot for integration tests
 - **Development**: Integrant REPL for interactive development
 
@@ -41,6 +42,8 @@
 │           ├── api.clj                         # API routes
 │           ├── pages.clj                       # HTML page routes
 │           └── utils.clj                       # Routing utilities
+├── src/cljs/surprisebuild/surprisebuildweb2/   # ClojureScript frontend code
+│   └── core.cljs                               # Main ClojureScript entry point
 ├── env/                                        # Environment-specific config
 │   ├── dev/                                    # Development configuration
 │   ├── prod/                                   # Production configuration
@@ -50,6 +53,8 @@
 │   ├── html/                                   # HTML templates
 │   └── public/                                 # Static web assets
 ├── test/                                       # Test files
+├── shadow-cljs.edn                             # ClojureScript build configuration
+├── package.json                                # Node.js dependencies
 └── modules/                                    # Kit modules
     └── kit-modules/                            # Git submodule for kit modules
 ```
@@ -60,6 +65,12 @@
 - **`src/clj/surprisebuild/surprisebuildweb2/core.clj`**: Main entry point with system lifecycle management
 - **`src/clj/surprisebuild/surprisebuildweb2/config.clj`**: Configuration loading and system setup
 - **`resources/system.edn`**: Integrant system configuration defining components and dependencies
+
+### Frontend Files
+- **`src/cljs/surprisebuild/surprisebuildweb2/core.cljs`**: ClojureScript entry point with Reagent components
+- **`shadow-cljs.edn`**: ClojureScript build configuration for Shadow-CLJS
+- **`package.json`**: Node.js dependencies (React, React-DOM, Shadow-CLJS)
+- **`resources/html/home.html`**: Main HTML template with React mount point
 
 ### Web Layer Files
 - **`src/clj/surprisebuild/surprisebuildweb2/web/handler.clj`**: Ring handler and routing setup
@@ -84,11 +95,20 @@
 - `selmer/selmer` 1.12.50 - Templating engine
 - `ch.qos.logback/logback-classic` 1.5.16 - Logging implementation
 
+### Frontend Dependencies
+- `reagent` 1.1.0 - React wrapper for ClojureScript
+- `cljs-ajax` 0.8.4 - Ajax library for ClojureScript
+- `react` 17.0.2 - React library
+- `react-dom` 17.0.2 - React DOM library
+- `shadow-cljs` 2.18.0 - ClojureScript build tool
+
 ### Development Dependencies
 - `integrant/repl` 0.3.3 - REPL-based development workflow
 - `ring/ring-devel` 1.14.0 - Development middleware
 - `ring/ring-mock` 0.4.0 - Request mocking for tests
 - `io.github.kit-clj/kit-generator` 0.2.5 - Code generation tools
+- `nrepl/nrepl` 1.3.1 - Network REPL for development
+- `cider/cider-nrepl` 0.45.0 - CIDER middleware for Emacs integration
 
 ## Available Commands and APIs
 
@@ -102,11 +122,16 @@ make uberjar                # Build production JAR
 
 # Babashka tasks
 bb run                      # Start development server
-bb nrepl                    # Start nREPL server
+bb nrepl                    # Start nREPL server (port 7888)
 bb cider                    # Start CIDER-compatible REPL
 bb test                     # Run tests
 bb uberjar                  # Build uberjar
 bb format                   # Format code with cljstyle
+
+# ClojureScript development
+npx shadow-cljs watch app   # Start ClojureScript dev server
+npx shadow-cljs compile app # Compile ClojureScript for production
+npx shadow-cljs repl app    # Start ClojureScript REPL
 ```
 
 ### Available Endpoints
@@ -136,6 +161,16 @@ The application uses Integrant for component lifecycle management. Key system co
 - **`:router/core`** - Main router with route composition
 - **`:reitit.routes/api`** - API route definitions
 - **`:reitit.routes/pages`** - Page route definitions
+
+### ClojureScript Build Configuration
+
+Shadow-CLJS configuration in `shadow-cljs.edn`:
+- **Build target**: Browser application
+- **Output directory**: `target/classes/cljsbuild/public/js`
+- **Asset path**: `/js` (served from resources/public)
+- **Main module**: `app` with entry point `surprisebuild.surprisebuildweb2.core/init!`
+- **Development**: Hot reloading with `mount-root` function
+- **nREPL port**: 7002 for ClojureScript REPL
 
 ## Implementation Patterns
 
@@ -186,6 +221,17 @@ The project supports Kit modules for extending functionality:
 4. **Leverage Integrant**: Use component lifecycle for managing stateful resources
 5. **Add tests**: Use Peridot for integration tests, standard clojure.test for unit tests
 6. **Configure environment**: Use environment variables for configuration overrides
+7. **Frontend development**: Use `npx shadow-cljs watch app` for live ClojureScript reloading
+8. **Code formatting**: Use `bb format` to maintain consistent code style with cljstyle
+
+## Build Process
+
+The project uses tools.build for creating production artifacts:
+- **Build script**: `build.clj` contains build tasks
+- **Clean**: Removes target directory and artifacts
+- **Prep**: Prepares dependencies and compiles ClojureScript
+- **Uber**: Creates standalone JAR with all dependencies
+- **All**: Runs complete build process (clean, prep, ClojureScript compile, uber)
 
 ## Common Development Tasks
 
