@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_REGION: "us-east-1"
-  ECR_REPOSITORY: "surprisebuild/surprisebuildweb"
+  ECR_REPOSITORY: "surprisebuildweb"
   IMAGE_TAG: "${{ github.sha }}"
 
 permissions:
