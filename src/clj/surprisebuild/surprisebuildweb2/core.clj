@@ -10,7 +10,8 @@
    [surprisebuild.surprisebuildweb2.web.handler]
 
     ;; Routes
-   [surprisebuild.surprisebuildweb2.web.routes.api])
+   [surprisebuild.surprisebuildweb2.web.routes.api] 
+    [surprisebuild.surprisebuildweb2.web.routes.pages])
   (:gen-class))
 
 ;; log uncaught exceptions in threads
