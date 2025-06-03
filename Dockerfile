@@ -4,6 +4,7 @@ ARG NODE_VERSION=20
 
 WORKDIR /usr/app
 COPY ./ /usr/app
+USER node
 
 RUN apt update && apt install curl -y
 
