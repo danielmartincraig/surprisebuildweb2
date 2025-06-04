@@ -13,7 +13,7 @@ ENV NVM_DIR=/root/.nvm
 
 RUN bash -c "source $NVM_DIR/nvm.sh && npm i -g npm && nvm install $NODE_VERSION"
 
-RUN bash -c "source $NVM_DIR/nvm.sh && npm install"
+RUN bash -c "source $NVM_DIR/nvm.sh && npm ci && npm rebuild lightningcss-cli"
 
 RUN bash -c "source $NVM_DIR/nvm.sh && clj -Sforce -T:build all"
 
