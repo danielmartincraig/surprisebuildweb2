@@ -86,8 +86,8 @@ resource "aws_ecs_cluster" "example" {
 
 resource "aws_ecs_task_definition" "example" {
   family                   = "example-task"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
+  network_mode             = "bridge"
+  requires_compatibilities = ["EC2"]
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
@@ -120,13 +120,7 @@ resource "aws_ecs_service" "example" {
   cluster         = aws_ecs_cluster.example.id
   task_definition = aws_ecs_task_definition.example.arn
   desired_count   = 1
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = aws_subnet.example[*].id
-    security_groups  = [aws_security_group.example.id]
-    assign_public_ip = true
-  }
+  launch_type     = "EC2" 
 
   load_balancer {
     target_group_arn = aws_lb_target_group.example.arn
