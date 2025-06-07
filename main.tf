@@ -44,14 +44,16 @@ resource "aws_route_table" "example" {
 }
 
 resource "aws_route_table_association" "example" {
-  subnet_id      = aws_subnet.example[count.index].id
+  count          = 2
+  subnet_id      = aws_subnet.example.id
   route_table_id = aws_route_table.example.id
 }
 
 resource "aws_subnet" "example" {
+  count = 2
   vpc_id            = aws_vpc.example.id
-  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 8, count.index)
-  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 8, 1)
+  availability_zone = "us-east-1a"
 }
 
 data "aws_availability_zones" "available" {}
