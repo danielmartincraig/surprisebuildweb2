@@ -149,7 +149,6 @@ resource "aws_ecs_service" "example2" {
   cluster         = aws_ecs_cluster.example.id
   task_definition = aws_ecs_task_definition.example.arn
   desired_count   = 1
-  launch_type     = "EC2" 
 
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.asg.name
