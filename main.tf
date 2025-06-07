@@ -44,13 +44,11 @@ resource "aws_route_table" "example" {
 }
 
 resource "aws_route_table_association" "example" {
-  count          = 2
   subnet_id      = aws_subnet.example[count.index].id
   route_table_id = aws_route_table.example.id
 }
 
 resource "aws_subnet" "example" {
-  count = 2
   vpc_id            = aws_vpc.example.id
   cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 8, count.index)
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
@@ -84,9 +82,37 @@ resource "aws_ecs_cluster" "example" {
   name = "example-cluster"
 }
 
+resource "aws_ecs_capacity_provider" "asg" {
+  name = "ecs-asg-capacity-provider"
+
+  auto_scaling_group_provider {
+    auto_scaling_group_arn         = aws_autoscaling_group.ecs.arn
+
+    managed_scaling {
+      status                    = "ENABLED"
+      target_capacity           = 1
+      minimum_scaling_step_size = 1
+      maximum_scaling_step_size = 1000
+      instance_warmup_period    = 300
+    }
+  }
+}
+
+resource "aws_ecs_cluster_capacity_providers" "example" {
+  cluster_name = aws_ecs_cluster.example.name
+
+  capacity_providers = [aws_ecs_capacity_provider.asg.name]
+
+  default_capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.asg.name
+    weight            = 100
+    base              = 1
+  }
+}
+
 resource "aws_ecs_task_definition" "example" {
   family                   = "example-task"
-  network_mode             = "bridge"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
   cpu                      = "256"
   memory                   = "512"
@@ -101,6 +127,7 @@ resource "aws_ecs_task_definition" "example" {
         {
           containerPort = 80
           hostPort      = 80
+          protocol      = "tcp"
         }
       ]
       logConfiguration = {
@@ -122,11 +149,18 @@ resource "aws_ecs_service" "example2" {
   desired_count   = 1
   launch_type     = "EC2" 
 
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.asg.name
+    weight            = 100
+  }
+
   load_balancer {
     target_group_arn = aws_lb_target_group.example.arn
     container_name   = "example"
     container_port   = 80
   }
+
+  depends_on = [aws_autoscaling_group.ecs]
 }
 
 resource "aws_cloudwatch_log_group" "example" {
@@ -188,8 +222,8 @@ resource "aws_lb_target_group" "example" {
 
 resource "aws_lb_listener" "example2" {
   load_balancer_arn = aws_lb.example.arn
-  port              = "443"
-  protocol          = "HTTPS"
+  port              = "80"
+  protocol          = "HTTP"
 
   ssl_policy        = "ELBSecurityPolicy-2016-08"
   certificate_arn   = aws_acm_certificate.parent_acm.arn
@@ -412,4 +446,85 @@ resource "aws_s3_bucket_policy" "example" {
       }
     ]
   })
+}
+
+resource "aws_iam_role" "ecs_instance_role" {
+  name = "ecsInstanceRole"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
+
+resource "aws_iam_instance_profile" "ecs_instance_profile" {
+  name = "ecsInstanceProfile"
+  role = aws_iam_role.ecs_instance_role.name
+}
+
+data "aws_ssm_parameter" "ecs_ami" {
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+}
+
+resource "aws_launch_template" "ecs" {
+  name_prefix   = "ecs-"
+  image_id      = data.aws_ssm_parameter.ecs_ami.value
+  instance_type = "t3.micro"
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ecs_instance_profile.name
+  }
+  vpc_security_group_ids = [aws_security_group.example.id]
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "ecs-instance"
+    }
+  }
+
+  user_data = base64encode(<<EOF
+#!/bin/bash
+echo ECS_CLUSTER=${aws_ecs_cluster.example.name} >> /etc/ecs/ecs.config
+EOF
+  )
+}
+
+resource "aws_autoscaling_group" "ecs" {
+  name                      = "ecs-asg"
+  min_size                  = 1
+  max_size                  = 2
+  desired_capacity          = 1
+  vpc_zone_identifier       = aws_subnet.example[*].id
+  launch_template {
+    id      = aws_launch_template.ecs.id
+    version = "$Latest"
+  }
+  tag {
+    key                 = "AmazonECSManaged"
+    value               = true
+    propagate_at_launch = true
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_eip" "nat" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "example" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.example[0].id 
+  depends_on    = [aws_internet_gateway.example]
 }
