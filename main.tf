@@ -115,7 +115,7 @@ resource "aws_ecs_task_definition" "example" {
   ])
 }
 
-resource "aws_ecs_service" "example" {
+resource "aws_ecs_service" "example2" {
   name            = "example-service"
   cluster         = aws_ecs_cluster.example.id
   task_definition = aws_ecs_task_definition.example.arn
@@ -186,7 +186,7 @@ resource "aws_lb_target_group" "example" {
   }
 }
 
-resource "aws_lb_listener" "example" {
+resource "aws_lb_listener" "example2" {
   load_balancer_arn = aws_lb.example.arn
   port              = "443"
   protocol          = "HTTPS"
