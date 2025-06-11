@@ -8,7 +8,7 @@ terraform {
   cloud { 
     organization = "surprisebuild"
     workspaces { 
-      name = "surprisebuildweb" 
+      name = "surprisebuild" 
     } 
   } 
   required_version = ">= 1.5.0"

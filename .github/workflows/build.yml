@@ -10,7 +10,7 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "surprisebuild"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_WORKSPACE: "surprisebuildweb"
+  TF_WORKSPACE: "surprisebuild"
   AWS_REGION: "us-east-1"
   ECR_REPOSITORY: "surprisebuildweb"
   IMAGE_TAG: "${{ github.sha }}"
